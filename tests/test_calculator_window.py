@@ -6,6 +6,31 @@ from PySide6.QtUiTools import QUiLoader
 from calculator_engine import CalculationResult, Field
 
 
+def test_entry_module_exposes_main():
+    import Calculate
+
+    assert callable(Calculate.main)
+
+
+def test_entry_configures_windows_font_directory(monkeypatch):
+    import Calculate
+
+    monkeypatch.delenv("QT_QPA_FONTDIR", raising=False)
+    monkeypatch.setenv("WINDIR", r"C:\Windows")
+
+    Calculate._configure_qt_font_directory()
+
+    assert Path(Calculate.os.environ["QT_QPA_FONTDIR"]) == Path(r"C:\Windows\Fonts")
+
+
+def test_entry_applies_consistent_application_font(qapp):
+    import Calculate
+
+    Calculate._apply_application_font(qapp)
+
+    assert qapp.font().family() == "Noto Sans SC"
+
+
 def test_ui_file_loads_and_exposes_required_widgets(qapp):
     ui_file = QFile(str(Path("ui/calculator.ui")))
     assert ui_file.open(QFile.ReadOnly)

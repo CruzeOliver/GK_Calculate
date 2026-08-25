@@ -1,2 +1,6 @@
-/.superpowers
-/.vscode
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.superpowers/
+.vscode/
+calculator-preview.png
