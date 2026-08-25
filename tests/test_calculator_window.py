@@ -31,6 +31,33 @@ def test_entry_applies_consistent_application_font(qapp):
     assert qapp.font().family() == "Noto Sans SC"
 
 
+def test_entry_loads_stylesheet_from_application_directory(qapp, monkeypatch, tmp_path):
+    import Calculate
+
+    stylesheet = "QWidget { background-color: #123456; }"
+    (tmp_path / "style.qss").write_text(stylesheet, encoding="utf-8")
+    monkeypatch.setattr(Calculate, "__file__", str(tmp_path / "Calculate.py"))
+    qapp.setStyleSheet("")
+
+    loaded = Calculate._load_stylesheet(qapp)
+
+    assert loaded is True
+    assert qapp.styleSheet() == stylesheet
+
+
+def test_entry_keeps_current_style_when_stylesheet_is_missing(qapp, monkeypatch, tmp_path):
+    import Calculate
+
+    existing_style = "QWidget { color: #222222; }"
+    monkeypatch.setattr(Calculate, "__file__", str(tmp_path / "Calculate.py"))
+    qapp.setStyleSheet(existing_style)
+
+    loaded = Calculate._load_stylesheet(qapp)
+
+    assert loaded is False
+    assert qapp.styleSheet() == existing_style
+
+
 def test_ui_file_loads_and_exposes_required_widgets(qapp):
     ui_file = QFile(str(Path("ui/calculator.ui")))
     assert ui_file.open(QFile.ReadOnly)

@@ -20,10 +20,21 @@ def _apply_application_font(app: QApplication) -> None:
     app.setFont(QFont("Noto Sans SC", 10))
 
 
+def _load_stylesheet(app: QApplication) -> bool:
+    stylesheet_path = Path(__file__).resolve().parent / "style.qss"
+    try:
+        stylesheet = stylesheet_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return False
+    app.setStyleSheet(stylesheet)
+    return True
+
+
 def main() -> int:
     _configure_qt_font_directory()
     app = QApplication.instance() or QApplication(sys.argv)
     _apply_application_font(app)
+    _load_stylesheet(app)
     window = CalculatorWindow()
     window.show()
     return app.exec()

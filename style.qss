@@ -1,0 +1,228 @@
+QWidget {
+background-color: #f7f9fa;
+font-family: "Microsoft YaHei", "Segoe UI", SimSun;
+font-size: 8pt;
+color: #333333;
+}
+
+QPushButton {
+background-color: #007bff;
+color: white;
+border: 2px solid #007bff;
+padding: 3px 5px;
+border-radius: 4px;
+}
+QPushButton:hover {
+background-color: #0069d9;
+border-color: #0062cc;
+}
+QPushButton:pressed {
+background-color: #0056b3;
+border-color: #004d9c;
+padding-top: 11px;
+padding-bottom: 9px;
+}
+QPushButton:disabled {
+background-color: #cccccc;
+color: #666666;
+border: 1px solid #cccccc;
+}
+
+QToolButton {
+background-color: transparent;
+color: #007bff;
+border: none;
+padding: 8px;
+border-radius: 4px;
+}
+QToolButton:hover {
+background-color: #e6f0ff;
+color: #0056b3;
+}
+QToolButton:pressed {
+background-color: #cce0ff;
+}
+
+QLineEdit {
+background-color: white;
+border: 1px solid #ced4da;
+border-radius: 4px;
+padding: 3px 5px;
+color: #333333;
+}
+QLineEdit:focus {
+border-color: #007bff;
+}
+
+QCheckBox {
+color: #333333;
+}
+QCheckBox::indicator {
+width: 14px;
+height: 14px;
+border: 1px solid #ced4da;
+border-radius: 3px;
+background-color: white;
+}
+QCheckBox::indicator:hover {
+border-color: #007bff;
+}
+QCheckBox::indicator:checked {
+background-color: #007bff;
+border-color: #007bff;
+}
+
+QComboBox {
+background-color: white;
+border: 1px solid #ced4da;
+border-radius: 4px;
+padding: 3px 5px;
+color: #333333;
+}
+QComboBox:focus {
+border-color: #007bff;
+}
+QComboBox::down-arrow {
+width: 12px;
+height: 12px;
+}
+QComboBox QAbstractItemView {
+border: 1px solid #007bff;
+outline: none;
+padding: 4px 0;
+}
+
+QTabWidget::pane {
+border: 1px solid #ced4da;
+background-color: white;
+}
+QTabWidget::tab-bar {
+left: 5px;
+}
+QTabBar::tab {
+background: #e9ecef;
+color: #495057;
+padding: 6px 15px;
+border: 1px solid #ced4da;
+border-bottom: none;
+border-top-left-radius: 4px;
+border-top-right-radius: 4px;
+margin-right: 2px;
+}
+QTabBar::tab:hover {
+background: #dee2e6;
+}
+QTabBar::tab:selected {
+background: #007bff;
+color: white;
+border-color: #007bff;
+border-bottom-color: white;
+margin-bottom: -1px;
+}
+
+QMenuBar {
+background-color: #f7f9fa;
+color: #333333;
+border-bottom: 2px solid #e0e0e0;
+}
+QMenuBar::item {
+background-color: transparent;
+padding: 4px 8px;
+border-radius: 4px;
+}
+QMenuBar::item:hover {
+background-color: #e6f0ff;
+color: #0056b3;
+}
+QMenuBar::item:selected {
+background-color: #007bff;
+color: white;
+}
+
+QMenu {
+background-color: white;
+color: #333333;
+border: 1px solid #ced4da;
+border-radius: 6px;
+padding: 4px 0;
+margin: 2px;
+}
+QMenu::item {
+padding: 6px 24px 6px 32px;
+border-radius: 4px;
+background-color: transparent;
+}
+QMenu::item:hover, QMenu::item:selected {
+background-color: #007bff;
+color: white;
+}
+QMenu::item:disabled {
+color: #999999;
+background-color: transparent;
+}
+QMenu::item:checked {
+font-weight: bold;
+color: #007bff;
+}
+QMenu::separator {
+height: 1px;
+background: #e0e0e0;
+margin: 4px 0;
+}
+
+/* ---------------------------------------------------------------------- /
+/ 5. Dock 窗口 (QDockWidget) 样式 /
+/ ---------------------------------------------------------------------- */
+QDockWidget {
+border: 3px solid #007bff;
+}
+QDockWidget::title {
+background: #007bff;
+color: #333333;
+padding: 6px;
+border-bottom: 3px solid #ced4da;
+border-top-left-radius: 4px;
+border-top-right-radius: 4px;
+font-size: 10pt; /* 增大字体 */
+font-weight: bold; /* 加粗字体 */
+}
+QDockWidget::title:active {
+background: #c1d8f0;
+color: white;
+}
+
+QRadioButton {
+    color: #333333;
+}
+
+QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #ced4da;
+    border-radius: 7px;  /* 圆形 */
+    background-color: white;
+}
+
+QRadioButton::indicator:hover {
+    border-color: #007bff;
+}
+
+QRadioButton::indicator:checked {
+    border-color: #007bff;
+    background-color: #007bff;
+}
+
+QRadioButton::indicator:checked:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+QRadioButton::indicator:disabled {
+    background-color: #e9ecef;
+    border-color: #cccccc;
+}
+
+QRadioButton::indicator:checked:disabled {
+    background-color: #cccccc;
+    border-color: #bbbbbb;
+}
