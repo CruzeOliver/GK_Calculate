@@ -35,6 +35,7 @@ class CalculatorWindow(QMainWindow):
 
         self.base_input = self._required_widget(QLineEdit, "baseInput")
         self.current_input = self._required_widget(QLineEdit, "currentInput")
+        self.amount_input = self._required_widget(QLineEdit, "amountInput")
         self.rate_input = self._required_widget(QLineEdit, "rateInput")
         self.calculate_button = self._required_widget(QPushButton, "calculateButton")
         self.clear_button = self._required_widget(QPushButton, "clearButton")
@@ -47,9 +48,10 @@ class CalculatorWindow(QMainWindow):
         self.inputs: dict[Field, QLineEdit] = {
             Field.BASE: self.base_input,
             Field.CURRENT: self.current_input,
+            Field.AMOUNT: self.amount_input,
             Field.RATE: self.rate_input,
         }
-        self.calculated_field: Field | None = None
+        self.calculated_fields: frozenset[Field] = frozenset()
         self._updating = False
 
         for field, widget in self.inputs.items():
@@ -81,22 +83,23 @@ class CalculatorWindow(QMainWindow):
     def _input_changed(self, changed_field: Field) -> None:
         if self._updating:
             return
-        if self.calculated_field is not None and changed_field is not self.calculated_field:
+        if self.calculated_fields and changed_field not in self.calculated_fields:
             with self._programmatic_update():
-                self.inputs[self.calculated_field].clear()
-            self.calculated_field = None
+                for field in self.calculated_fields:
+                    self.inputs[field].clear()
+            self.calculated_fields = frozenset()
         self._sync_input_state()
 
     def _sync_input_state(self) -> None:
         nonempty = [field for field, widget in self.inputs.items() if widget.text().strip()]
-        pending_field = None
-        if self.calculated_field is None and len(nonempty) == 2:
-            pending_field = next(field for field in Field if field not in nonempty)
+        pending_fields: frozenset[Field] = frozenset()
+        if not self.calculated_fields and len(nonempty) == 2:
+            pending_fields = frozenset(set(Field) - set(nonempty))
 
         for field, widget in self.inputs.items():
-            read_only = field is pending_field or field is self.calculated_field
+            read_only = field in pending_fields or field in self.calculated_fields
             widget.setReadOnly(read_only)
-            widget.setProperty("pendingResult", field is pending_field)
+            widget.setProperty("pendingResult", field in pending_fields)
             widget.setStyleSheet("background-color: #eeeeee;" if read_only else "")
 
     def calculate_requested(self) -> None:
@@ -105,8 +108,8 @@ class CalculatorWindow(QMainWindow):
             for field, widget in self.inputs.items()
             if widget.text().strip()
         }
-        if self.calculated_field is not None:
-            values.pop(self.calculated_field, None)
+        for field in self.calculated_fields:
+            values.pop(field, None)
 
         try:
             result = calculate(values)
@@ -117,8 +120,9 @@ class CalculatorWindow(QMainWindow):
         with self._programmatic_update():
             self.base_input.setText(f"{result.base:.2f}")
             self.current_input.setText(f"{result.current:.2f}")
+            self.amount_input.setText(f"{result.amount:.2f}")
             self.rate_input.setText(f"{result.rate:.2f}")
-        self.calculated_field = result.calculated_field
+        self.calculated_fields = result.calculated_fields
         self._sync_input_state()
         self.chart.update_result(result)
         self._append_success(result)
@@ -127,7 +131,7 @@ class CalculatorWindow(QMainWindow):
         with self._programmatic_update():
             for widget in self.inputs.values():
                 widget.clear()
-        self.calculated_field = None
+        self.calculated_fields = frozenset()
         self.log_message.clear()
         self.chart.clear_chart()
         self._sync_input_state()
@@ -137,6 +141,7 @@ class CalculatorWindow(QMainWindow):
             "计算完成："
             f"基期 {result.base:.2f}，"
             f"现期 {result.current:.2f}，"
+            f"增长量 {result.amount:.2f}，"
             f"增长率 {result.rate:.2f}%"
         )
 

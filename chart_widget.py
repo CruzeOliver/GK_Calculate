@@ -36,7 +36,10 @@ class PeriodChart(QWidget):
 
         self.annotation = pg.TextItem("", anchor=(0.5, 0.5), color="#222222")
         self.plot_item.addItem(self.annotation)
+        self.amount_label = pg.TextItem("", anchor=(0.0, 0.5), color="#C62828")
+        self.plot_item.addItem(self.amount_label)
         self.bar_item: pg.BarGraphItem | None = None
+        self.growth_item: pg.BarGraphItem | None = None
         self.value_labels: list[pg.TextItem] = []
         self.plot_item.setXRange(-0.75, 1.75, padding=0)
         self.plot_item.setYRange(0, 1, padding=0)
@@ -52,6 +55,16 @@ class PeriodChart(QWidget):
         )
         self.plot_item.addItem(self.bar_item)
 
+        growth_bottom = result.base if result.amount >= 0 else result.current
+        self.growth_item = pg.BarGraphItem(
+            x=[0],
+            y0=[growth_bottom],
+            height=[abs(result.amount)],
+            width=0.55,
+            brush=pg.mkBrush("#D32F2F"),
+        )
+        self.plot_item.addItem(self.growth_item)
+
         maximum = max(heights)
         scale = maximum if maximum > 0 else 1.0
         label_offset = scale * 0.025
@@ -63,14 +76,21 @@ class PeriodChart(QWidget):
 
         self.annotation.setText(_rate_text(result.rate))
         self.annotation.setPos(0.5, scale * 1.18)
+        amount_text = "增长量 0.00" if result.amount == 0 else f"增长量 {result.amount:+.2f}"
+        self.amount_label.setText(amount_text)
+        self.amount_label.setPos(0.34, growth_bottom + abs(result.amount) / 2.0)
         self.plot_item.setYRange(0, scale * 1.32, padding=0)
 
     def clear_chart(self) -> None:
         if self.bar_item is not None:
             self.plot_item.removeItem(self.bar_item)
             self.bar_item = None
+        if self.growth_item is not None:
+            self.plot_item.removeItem(self.growth_item)
+            self.growth_item = None
         for label in self.value_labels:
             self.plot_item.removeItem(label)
         self.value_labels.clear()
         self.annotation.setText("")
+        self.amount_label.setText("")
         self.plot_item.setYRange(0, 1, padding=0)

@@ -11,6 +11,7 @@ from typing import Mapping
 class Field(str, Enum):
     BASE = "base"
     CURRENT = "current"
+    AMOUNT = "amount"
     RATE = "rate"
 
 
@@ -18,8 +19,9 @@ class Field(str, Enum):
 class CalculationResult:
     base: float
     current: float
+    amount: float
     rate: float
-    calculated_field: Field
+    calculated_fields: frozenset[Field]
 
 
 class CalculationError(ValueError):
@@ -49,7 +51,10 @@ def _validate_known_values(parsed: Mapping[Field, float]) -> None:
 
 
 def _validate_result(result: CalculationResult) -> None:
-    if not all(math.isfinite(value) for value in (result.base, result.current, result.rate)):
+    if not all(
+        math.isfinite(value)
+        for value in (result.base, result.current, result.amount, result.rate)
+    ):
         raise CalculationError("计算结果不是有限数值")
     if result.base < 0:
         raise CalculationError("基期不能小于 0")
@@ -58,7 +63,7 @@ def _validate_result(result: CalculationResult) -> None:
 
 
 def calculate(values: Mapping[Field, str]) -> CalculationResult:
-    """Calculate the single missing value among base, current and rate."""
+    """Calculate all four values from any valid pair of known values."""
 
     parsed = _parse_values(values)
     if len(parsed) != 2:
@@ -67,26 +72,46 @@ def calculate(values: Mapping[Field, str]) -> CalculationResult:
         raise CalculationError("请输入两个已知量")
 
     _validate_known_values(parsed)
-    missing = next(field for field in Field if field not in parsed)
-
-    if missing is Field.CURRENT:
-        base = parsed[Field.BASE]
-        rate = parsed[Field.RATE]
-        current = base * (1.0 + rate / 100.0)
-    elif missing is Field.BASE:
-        current = parsed[Field.CURRENT]
-        rate = parsed[Field.RATE]
+    known = frozenset(parsed)
+    if known == {Field.BASE, Field.CURRENT}:
+        base, current = parsed[Field.BASE], parsed[Field.CURRENT]
+        amount = current - base
+        rate = _rate_from_base_and_amount(base, amount)
+    elif known == {Field.BASE, Field.RATE}:
+        base, rate = parsed[Field.BASE], parsed[Field.RATE]
+        amount = base * rate / 100.0
+        current = base + amount
+    elif known == {Field.BASE, Field.AMOUNT}:
+        base, amount = parsed[Field.BASE], parsed[Field.AMOUNT]
+        current = base + amount
+        rate = _rate_from_base_and_amount(base, amount)
+    elif known == {Field.CURRENT, Field.RATE}:
+        current, rate = parsed[Field.CURRENT], parsed[Field.RATE]
         denominator = 1.0 + rate / 100.0
         if math.isclose(denominator, 0.0, abs_tol=1e-12):
             raise CalculationError("增长率为 -100% 时无法计算基期")
         base = current / denominator
+        amount = current - base
+    elif known == {Field.CURRENT, Field.AMOUNT}:
+        current, amount = parsed[Field.CURRENT], parsed[Field.AMOUNT]
+        base = current - amount
+        rate = _rate_from_base_and_amount(base, amount)
     else:
-        base = parsed[Field.BASE]
-        current = parsed[Field.CURRENT]
-        if math.isclose(base, 0.0, abs_tol=1e-12):
-            raise CalculationError("基期为 0，无法计算增长率")
-        rate = (current / base - 1.0) * 100.0
+        rate, amount = parsed[Field.RATE], parsed[Field.AMOUNT]
+        if math.isclose(rate, 0.0, abs_tol=1e-12):
+            if math.isclose(amount, 0.0, abs_tol=1e-12):
+                raise CalculationError("条件不足，无法确定基期和现期")
+            raise CalculationError("增长率为 0 时增长量必须为 0")
+        base = amount * 100.0 / rate
+        current = base + amount
 
-    result = CalculationResult(base, current, rate, missing)
+    calculated_fields = frozenset(set(Field) - set(known))
+    result = CalculationResult(base, current, amount, rate, calculated_fields)
     _validate_result(result)
     return result
+
+
+def _rate_from_base_and_amount(base: float, amount: float) -> float:
+    if math.isclose(base, 0.0, abs_tol=1e-12):
+        raise CalculationError("基期为 0，无法计算增长率")
+    return amount / base * 100.0

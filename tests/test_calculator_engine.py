@@ -6,14 +6,18 @@ from calculator_engine import CalculationError, Field, calculate
 @pytest.mark.parametrize(
     ("values", "expected"),
     [
-        ({Field.BASE: "100", Field.RATE: "12"}, (100.0, 112.0, 12.0)),
-        ({Field.CURRENT: "112", Field.RATE: "12"}, (100.0, 112.0, 12.0)),
-        ({Field.BASE: "100", Field.CURRENT: "92"}, (100.0, 92.0, -8.0)),
+        ({Field.BASE: "100", Field.CURRENT: "112"}, (100.0, 112.0, 12.0, 12.0)),
+        ({Field.BASE: "100", Field.RATE: "12"}, (100.0, 112.0, 12.0, 12.0)),
+        ({Field.BASE: "100", Field.AMOUNT: "12"}, (100.0, 112.0, 12.0, 12.0)),
+        ({Field.CURRENT: "112", Field.RATE: "12"}, (100.0, 112.0, 12.0, 12.0)),
+        ({Field.CURRENT: "112", Field.AMOUNT: "12"}, (100.0, 112.0, 12.0, 12.0)),
+        ({Field.RATE: "12", Field.AMOUNT: "12"}, (100.0, 112.0, 12.0, 12.0)),
     ],
 )
 def test_calculate_each_missing_field(values, expected):
     result = calculate(values)
-    assert (result.base, result.current, result.rate) == pytest.approx(expected)
+    assert (result.base, result.current, result.amount, result.rate) == pytest.approx(expected)
+    assert result.calculated_fields == frozenset(set(Field) - set(values))
 
 
 @pytest.mark.parametrize(
@@ -26,6 +30,8 @@ def test_calculate_each_missing_field(values, expected):
         ({Field.BASE: "abc", Field.RATE: "10"}, "请输入有效数字"),
         ({Field.BASE: "nan", Field.RATE: "10"}, "请输入有限数值"),
         ({Field.BASE: "100"}, "请输入两个已知量"),
+        ({Field.AMOUNT: "0", Field.RATE: "0"}, "条件不足"),
+        ({Field.AMOUNT: "10", Field.RATE: "0"}, "增长率为 0"),
     ],
 )
 def test_invalid_inputs_raise_readable_errors(values, message):
