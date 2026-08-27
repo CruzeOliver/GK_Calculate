@@ -11,12 +11,14 @@ from PySide6.QtWidgets import (
     QFrame,
     QLineEdit,
     QMainWindow,
+    QPlainTextEdit,
     QPushButton,
     QTextEdit,
 )
 
 from calculator_engine import CalculationError, CalculationResult, Field, calculate
 from chart_widget import PeriodChart
+from assumption_allocator import allocate_assumptions, format_allocation
 
 
 class CalculatorWindow(QMainWindow):
@@ -37,6 +39,7 @@ class CalculatorWindow(QMainWindow):
         self.current_input = self._required_widget(QLineEdit, "currentInput")
         self.amount_input = self._required_widget(QLineEdit, "amountInput")
         self.rate_input = self._required_widget(QLineEdit, "rateInput")
+        self.allocation_process = self._required_widget(QPlainTextEdit, "allocationProcess")
         self.calculate_button = self._required_widget(QPushButton, "calculateButton")
         self.clear_button = self._required_widget(QPushButton, "clearButton")
         self.log_message = self._required_widget(QTextEdit, "logMessage")
@@ -88,6 +91,7 @@ class CalculatorWindow(QMainWindow):
                 for field in self.calculated_fields:
                     self.inputs[field].clear()
             self.calculated_fields = frozenset()
+            self.allocation_process.clear()
         self._sync_input_state()
 
     def _sync_input_state(self) -> None:
@@ -125,6 +129,7 @@ class CalculatorWindow(QMainWindow):
         self.calculated_fields = result.calculated_fields
         self._sync_input_state()
         self.chart.update_result(result)
+        self._update_allocation(result)
         self._append_success(result)
 
     def clear_all(self) -> None:
@@ -133,6 +138,7 @@ class CalculatorWindow(QMainWindow):
                 widget.clear()
         self.calculated_fields = frozenset()
         self.log_message.clear()
+        self.allocation_process.clear()
         self.chart.clear_chart()
         self._sync_input_state()
 
@@ -147,6 +153,17 @@ class CalculatorWindow(QMainWindow):
 
     def _append_error(self, message: str) -> None:
         self.log_message.append(f'<span style="color:#c62828;">错误：{escape(message)}</span>')
+
+    def _update_allocation(self, result: CalculationResult) -> None:
+        if result.rate <= 0:
+            self.allocation_process.setPlainText("假设分配法暂仅适用于正增长")
+            return
+        try:
+            plan = allocate_assumptions(result.current, result.rate)
+        except ValueError as exc:
+            self.allocation_process.setPlainText(str(exc))
+            return
+        self.allocation_process.setPlainText(format_allocation(plan))
 
     class _UpdateGuard:
         def __init__(self, window: "CalculatorWindow") -> None:

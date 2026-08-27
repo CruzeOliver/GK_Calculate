@@ -61,7 +61,19 @@
            </item>
           </layout>
          </item>
-         <item><spacer name="controlsSpacer"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property></spacer></item>
+         <item>
+          <widget class="QGroupBox" name="allocationGroup">
+           <property name="title"><string>假设分配</string></property>
+           <layout class="QVBoxLayout" name="allocationLayout">
+            <item>
+             <widget class="QPlainTextEdit" name="allocationProcess">
+              <property name="readOnly"><bool>true</bool></property>
+              <property name="placeholderText"><string>计算后显示考场估算过程</string></property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
          <item>
           <layout class="QHBoxLayout" name="buttonLayout">
            <item><widget class="QPushButton" name="calculateButton"><property name="text"><string>计算</string></property><property name="default"><bool>true</bool></property></widget></item>

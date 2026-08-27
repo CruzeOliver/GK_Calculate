@@ -71,6 +71,7 @@ def test_ui_file_loads_and_exposes_required_widgets(qapp):
         "currentInput",
         "amountInput",
         "rateInput",
+        "allocationProcess",
         "calculateButton",
         "clearButton",
         "logMessage",
@@ -135,10 +136,12 @@ def test_two_inputs_lock_missing_field_and_edit_invalidates_result(qtbot):
     qtbot.mouseClick(window.calculate_button, Qt.LeftButton)
     assert window.current_input.text() == "112.00"
     assert window.amount_input.text() == "12.00"
+    assert "现期=112，增长率=12%" in window.allocation_process.toPlainText()
 
     window.base_input.setText("200")
     assert window.current_input.text() == ""
     assert window.amount_input.text() == ""
+    assert window.allocation_process.toPlainText() == ""
     assert window.current_input.isReadOnly()
     assert window.amount_input.isReadOnly()
 
@@ -181,6 +184,7 @@ def test_clear_resets_inputs_log_and_chart(qtbot):
     assert all(not widget.isReadOnly() for widget in window.inputs.values())
     assert window.log_message.toPlainText() == ""
     assert window.chart.bar_item is None
+    assert window.allocation_process.toPlainText() == ""
 
 
 def test_calculation_error_is_appended_without_updating_chart(qtbot):
@@ -195,3 +199,16 @@ def test_calculation_error_is_appended_without_updating_chart(qtbot):
 
     assert "基期为 0，无法计算增长率" in window.log_message.toPlainText()
     assert window.chart.bar_item is None
+
+
+def test_negative_growth_shows_allocation_not_applicable(qtbot):
+    from calculator_window import CalculatorWindow
+
+    window = CalculatorWindow()
+    qtbot.addWidget(window)
+    window.base_input.setText("100")
+    window.current_input.setText("92")
+
+    qtbot.mouseClick(window.calculate_button, Qt.LeftButton)
+
+    assert window.allocation_process.toPlainText() == "假设分配法暂仅适用于正增长"
