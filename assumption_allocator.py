@@ -120,14 +120,12 @@ def format_allocation(plan: AllocationPlan) -> str:
 
 def format_allocation_html(plan: AllocationPlan) -> str:
     step_blocks: list[str] = []
-    pending = plan.current
-    for index, step in enumerate(plan.steps, start=1):
+    for step in plan.steps:
         step_blocks.append(
             f"""
-            <div class="allocation-tree" style="margin:6px 0 10px 0;">
-              <div align="center"><b>第{index}次：待分配 {_number(pending)}</b></div>
+            <div class="allocation-tree" style="margin:2px 0 5px 0;">
               <div align="center" style="color:#6c757d;">│</div>
-              <table width="92%" align="center" cellspacing="0" cellpadding="3">
+              <table width="92%" align="center" cellspacing="0" cellpadding="2">
                 <tr>
                   <td width="50%" align="center"
                       style="border-top:1px solid #8aa4bd; border-right:1px solid #8aa4bd;">
@@ -146,7 +144,6 @@ def format_allocation_html(plan: AllocationPlan) -> str:
             </div>
             """
         )
-        pending = step.remainder
 
     return f"""
     <div style="font-family:'Noto Sans SC'; font-size:9pt; color:#333;">

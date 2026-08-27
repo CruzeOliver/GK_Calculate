@@ -79,7 +79,8 @@ def test_html_formatter_renders_each_step_as_a_branch_tree():
     html = format_allocation_html(allocate_assumptions(180.0, 24.0))
 
     assert html.count('class="allocation-tree"') == 3
-    assert "第1次：待分配 180" in html
+    assert "待分配" not in html
+    assert "第1次" not in html
     assert "假设基期" in html and ">100<" in html
     assert "增长量" in html and ">24<" in html
     assert "小计 124，余 56" in html
