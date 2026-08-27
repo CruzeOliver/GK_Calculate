@@ -116,3 +116,50 @@ def format_allocation(plan: AllocationPlan) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def format_allocation_html(plan: AllocationPlan) -> str:
+    step_blocks: list[str] = []
+    pending = plan.current
+    for index, step in enumerate(plan.steps, start=1):
+        step_blocks.append(
+            f"""
+            <div class="allocation-tree" style="margin:6px 0 10px 0;">
+              <div align="center"><b>第{index}次：待分配 {_number(pending)}</b></div>
+              <div align="center" style="color:#6c757d;">│</div>
+              <table width="92%" align="center" cellspacing="0" cellpadding="3">
+                <tr>
+                  <td width="50%" align="center"
+                      style="border-top:1px solid #8aa4bd; border-right:1px solid #8aa4bd;">
+                    <span style="color:#5b6570;">假设基期</span>
+                    <div style="font-weight:bold; color:#075ea8;">{_number(step.base)}</div>
+                  </td>
+                  <td width="50%" align="center" style="border-top:1px solid #8aa4bd;">
+                    <span style="color:#5b6570;">增长量</span>
+                    <div style="font-weight:bold; color:#c62828;">{_number(step.amount)}</div>
+                  </td>
+                </tr>
+              </table>
+              <div align="center" style="color:#444;">
+                小计 {_number(step.subtotal)}，余 {_number(step.remainder)}
+              </div>
+            </div>
+            """
+        )
+        pending = step.remainder
+
+    return f"""
+    <div style="font-family:'Noto Sans SC'; font-size:9pt; color:#333;">
+      <div align="center" style="font-size:10pt; margin-bottom:6px;">
+        <b>现期={_number(plan.current)}，增长率={_number(plan.rate)}%</b>
+      </div>
+      {''.join(step_blocks)}
+      <div style="border-top:1px solid #ced4da; margin-top:8px; padding-top:6px;">
+        <b>估算汇总</b><br>
+        近似基期：{_number(plan.estimated_base)}<br>
+        近似增长量：{_number(plan.estimated_amount)}<br>
+        近似现期：{_number(plan.estimated_base + plan.estimated_amount)}
+        （余 {_number(plan.remainder)}）
+      </div>
+    </div>
+    """

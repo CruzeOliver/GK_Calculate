@@ -11,14 +11,14 @@ from PySide6.QtWidgets import (
     QFrame,
     QLineEdit,
     QMainWindow,
-    QPlainTextEdit,
     QPushButton,
+    QTextBrowser,
     QTextEdit,
 )
 
 from calculator_engine import CalculationError, CalculationResult, Field, calculate
 from chart_widget import PeriodChart
-from assumption_allocator import allocate_assumptions, format_allocation
+from assumption_allocator import allocate_assumptions, format_allocation_html
 
 
 class CalculatorWindow(QMainWindow):
@@ -39,7 +39,7 @@ class CalculatorWindow(QMainWindow):
         self.current_input = self._required_widget(QLineEdit, "currentInput")
         self.amount_input = self._required_widget(QLineEdit, "amountInput")
         self.rate_input = self._required_widget(QLineEdit, "rateInput")
-        self.allocation_process = self._required_widget(QPlainTextEdit, "allocationProcess")
+        self.allocation_process = self._required_widget(QTextBrowser, "allocationProcess")
         self.calculate_button = self._required_widget(QPushButton, "calculateButton")
         self.clear_button = self._required_widget(QPushButton, "clearButton")
         self.log_message = self._required_widget(QTextEdit, "logMessage")
@@ -163,7 +163,7 @@ class CalculatorWindow(QMainWindow):
         except ValueError as exc:
             self.allocation_process.setPlainText(str(exc))
             return
-        self.allocation_process.setPlainText(format_allocation(plan))
+        self.allocation_process.setHtml(format_allocation_html(plan))
 
     class _UpdateGuard:
         def __init__(self, window: "CalculatorWindow") -> None:

@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from assumption_allocator import allocate_assumptions, format_allocation
+from assumption_allocator import allocate_assumptions, format_allocation, format_allocation_html
 
 
 def test_three_step_allocation_uses_exam_friendly_numbers():
@@ -73,3 +73,14 @@ def test_candidate_just_above_remainder_is_rejected():
 def test_unrepresentable_base_reports_domain_error():
     with pytest.raises(ValueError, match="超出假设分配精度范围"):
         allocate_assumptions(5e-324, 1e100)
+
+
+def test_html_formatter_renders_each_step_as_a_branch_tree():
+    html = format_allocation_html(allocate_assumptions(180.0, 24.0))
+
+    assert html.count('class="allocation-tree"') == 3
+    assert "第1次：待分配 180" in html
+    assert "假设基期" in html and ">100<" in html
+    assert "增长量" in html and ">24<" in html
+    assert "小计 124，余 56" in html
+    assert "近似基期：145" in html

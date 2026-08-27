@@ -66,7 +66,7 @@
            <property name="title"><string>假设分配</string></property>
            <layout class="QVBoxLayout" name="allocationLayout">
             <item>
-             <widget class="QPlainTextEdit" name="allocationProcess">
+             <widget class="QTextBrowser" name="allocationProcess">
               <property name="readOnly"><bool>true</bool></property>
               <property name="placeholderText"><string>计算后显示考场估算过程</string></property>
              </widget>

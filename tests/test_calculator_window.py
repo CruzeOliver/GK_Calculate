@@ -2,6 +2,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QFile, QObject, Qt
 from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QTextBrowser
 
 from calculator_engine import CalculationResult, Field
 
@@ -77,6 +78,7 @@ def test_ui_file_loads_and_exposes_required_widgets(qapp):
         "logMessage",
     ):
         assert window.findChild(QObject, name) is not None
+    assert isinstance(window.findChild(QObject, "allocationProcess"), QTextBrowser)
 
 
 def test_chart_updates_annotation_and_can_clear(qtbot):
@@ -137,6 +139,7 @@ def test_two_inputs_lock_missing_field_and_edit_invalidates_result(qtbot):
     assert window.current_input.text() == "112.00"
     assert window.amount_input.text() == "12.00"
     assert "现期=112，增长率=12%" in window.allocation_process.toPlainText()
+    assert "<table" in window.allocation_process.toHtml()
 
     window.base_input.setText("200")
     assert window.current_input.text() == ""
