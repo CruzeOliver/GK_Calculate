@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 import pyqtgraph as pg
 
@@ -36,7 +37,10 @@ class PeriodChart(QWidget):
 
         self.annotation = pg.TextItem("", anchor=(0.5, 0.5), color="#222222")
         self.plot_item.addItem(self.annotation)
-        self.amount_label = pg.TextItem("", anchor=(0.0, 0.5), color="#C62828")
+        self.amount_label = pg.TextItem("", anchor=(0.5, 0.5), color="#FFFFFF")
+        amount_font = QFont()
+        amount_font.setBold(True)
+        self.amount_label.setFont(amount_font)
         self.plot_item.addItem(self.amount_label)
         self.bar_item: pg.BarGraphItem | None = None
         self.growth_item: pg.BarGraphItem | None = None
@@ -67,10 +71,12 @@ class PeriodChart(QWidget):
 
         maximum = max(heights)
         scale = maximum if maximum > 0 else 1.0
-        label_offset = scale * 0.025
         for x_position, value in enumerate(heights):
-            label = pg.TextItem(f"{value:.2f}", anchor=(0.5, 1.0), color="#222222")
-            label.setPos(x_position, value + label_offset)
+            label = pg.TextItem(f"{value:.2f}", anchor=(0.5, 0.5), color="#FFFFFF")
+            label_font = QFont()
+            label_font.setBold(True)
+            label.setFont(label_font)
+            label.setPos(x_position, value / 2.0)
             self.plot_item.addItem(label)
             self.value_labels.append(label)
 
@@ -78,7 +84,7 @@ class PeriodChart(QWidget):
         self.annotation.setPos(0.5, scale * 1.18)
         amount_text = "增长量 0.00" if result.amount == 0 else f"增长量 {result.amount:+.2f}"
         self.amount_label.setText(amount_text)
-        self.amount_label.setPos(0.34, growth_bottom + abs(result.amount) / 2.0)
+        self.amount_label.setPos(0.0, growth_bottom + abs(result.amount) / 2.0)
         self.plot_item.setYRange(0, scale * 1.32, padding=0)
 
     def clear_chart(self) -> None:

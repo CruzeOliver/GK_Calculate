@@ -105,6 +105,24 @@ def test_chart_updates_annotation_and_can_clear(qtbot):
     assert chart.growth_item is None
 
 
+def test_chart_places_values_inside_their_colored_bars(qtbot):
+    """Catch labels drifting above or beside the bar they describe."""
+    from chart_widget import PeriodChart
+
+    chart = PeriodChart()
+    qtbot.addWidget(chart)
+    chart.update_result(
+        CalculationResult(
+            100.0, 112.0, 12.0, 12.0, frozenset({Field.CURRENT, Field.AMOUNT})
+        )
+    )
+
+    assert [label.pos().x() for label in chart.value_labels] == [0.0, 1.0]
+    assert [label.pos().y() for label in chart.value_labels] == [50.0, 56.0]
+    assert chart.amount_label.pos().x() == 0.0
+    assert chart.amount_label.pos().y() == 106.0
+
+
 def test_chart_describes_negative_and_zero_growth(qtbot):
     from chart_widget import PeriodChart
 
